@@ -94,7 +94,15 @@ Puppet::Type.type(:package).provide :compressed_app,
   end
 
   def query
-    if File.exists?("/var/db/.puppet_compressed_app_installed_#{@resource[:name]}")
+    db_file_path = "/var/db/.puppet_compressed_app_installed_#{@resource[:name]}"
+    
+    return unless File.exists?(db_file_path)
+    
+    db_file_handle = File.open(db_file_path, 'r')
+    db_file_contents = db_file_handle.read
+    db_file_handle.close
+    
+    if(db_file_contents == "name: '#{@resource[:name]}'\nsource: '#{@resource[:source]}'\n")
       {
         :name   => @resource[:name],
         :ensure => :installed
